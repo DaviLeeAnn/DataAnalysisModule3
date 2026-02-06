@@ -7,12 +7,19 @@ USE coffeeshop_db;
 
 -- Q1) Compute total items per order.
 --     Return (order_id, total_items) from order_items.
+select order_id, sum(quantity) as total_items from order_items
+group by order_id;
 
 -- Q2) Compute total items per order for PAID orders only.
 --     Return (order_id, total_items). Hint: order_id IN (SELECT ... FROM orders WHERE status='paid').
+select orders.order_id, sum(order_items.quantity) as total_items
+from order_items
+where order_id in(select order_id from orders where status = 'paid')
+group by order_id;
 
 -- Q3) How many orders were placed per day (all statuses)?
 --     Return (order_date, orders_count) from orders.
+select count(order_datetime
 
 -- Q4) What is the average number of items per PAID order?
 --     Use a subquery or CTE over order_items filtered by order_id IN (...).
