@@ -72,21 +72,63 @@ where rank_num = 1;
 
 -- Q6) Inventory check: show rows where on_hand < 12 in any store.
 --     Return store_name, product_name, on_hand.
-
+select stores.name as store_name,
+products.name as product_name,
+inventory.on_hand
+from inventory
+inner join stores on inventory.store_id = stores.store_id
+inner join products on inventory.product_id = products.product_id
+where inventory.on_hand > 12
+order by inventory.on_hand, stores.name;
 
 -- Q7) Manager roster: list each store's manager_name and hire_date.
 --     (Assume title = 'Manager').
-
+select stores.name as store_name,
+concat(employees.first_name, ' ', employees.last_name) as manager_name,
+employees.hire_date
+from employees
+inner join stores on employees.store_id = stores.store_id
+where employees.title = 'Manager'
+order by stores.name;
 
 -- Q8) Using a subquery/CTE: list products whose total PAID revenue is above
 --     the average PAID product revenue. Return product_name, total_revenue.
-
+with product_revenue as
+(select products.product_id,
+products.name as product_name,
+sum(order_items.quantity * products.price) as total_revenue
+from order_items
+inner join orders on order_items.order_id = orders.order_id
+inner join products on order_items.product_id = products.product_id
+where orders.status = 'paid'
+group by products.product_id, products.name)
+select product_name, total_revenue
+from product_revenue
+where total_revenue > (select avg(total_revenue) from product_revenue)
+order by total_revenue;
 
 -- Q9) Churn-ish check: list customers with their last PAID order date.
 --     If they have no PAID orders, show NULL.
 --     Hint: Put the status filter in the LEFT JOIN's ON clause to preserve non-buyer rows.
-
+select customers.customer_id,
+concat(customers.first_name, ' ', customers.last_name) as customer_name,
+max(orders.order_datetime) as last_paid
+from customers
+left join orders on customers.customer_id = orders.customer_id and orders.status = 'paid'
+group by customers.customer_id, customers.first_name, customers.last_name
+order by last_paid;
 
 -- Q10) Product mix report (PAID only):
 --     For each store and category, show total units and total revenue (= SUM(quantity * products.price)).
-
+select stores.name as store_name,
+categories.name as category_name,
+sum(order_items.quantity) as total_units,
+sum(order_items.quantity * products.price) as total_revenue
+from orders
+inner join stores on orders.store_id = stores.store_id
+inner join order_items on orders.order_id = order_items.order_id
+inner join products on order_items.product_id = products.product_id
+inner join categories on products.category_id = categories.category_id
+where orders.status = 'paid'
+group by stores.store_id, stores.name, categories.category_id, categories.name
+order by stores.name, total_revenue;
