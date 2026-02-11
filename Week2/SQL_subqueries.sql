@@ -58,11 +58,11 @@ WHERE product_id NOT IN (SELECT product_id FROM order_items);
 --     Return product_id, product_name, total_units_sold.
 SELECT pt.product_id, p.name AS product_name, pt.total_units_sold
 FROM (SELECT product_id, SUM(quantity) AS total_units_sold
-FROM order_items
-GROUP BY product_id) AS pt
+		FROM order_items
+		GROUP BY product_id) AS pt
 JOIN products p ON pt.product_id = p.product_id
 WHERE pt.total_units_sold > 
-(SELECT AVG(total_units_sold) 
-FROM (SELECT product_id, SUM(quantity) AS total_units_sold
-FROM order_items
-GROUP BY product_id) AS avg_calc);
+	(SELECT AVG(total_units_sold) 
+		FROM (SELECT product_id, SUM(quantity) AS total_units_sold
+		FROM order_items
+		GROUP BY product_id) AS avg_calc);
